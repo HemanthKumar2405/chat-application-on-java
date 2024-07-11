@@ -1,0 +1,99 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Socket;
+
+class Balaji extends JFrame implements Runnable, ActionListener {
+    JTextField textField;
+    JTextArea textArea;
+    JButton btnSend;
+    Socket socket;
+    DataOutputStream dataOut;
+    DataInputStream dataIn;
+    Thread thread;
+
+    Balaji() {
+        // Initialize components
+        textField = new JTextField(40);
+        textArea = new JTextArea(20, 50);
+        btnSend = new JButton("Send");
+        textArea.setEditable(false);
+
+        btnSend.addActionListener(this);
+
+        // Set up socket connection
+        try {
+            socket = new Socket("localhost", 12000);
+            dataOut = new DataOutputStream(socket.getOutputStream());
+            dataIn = new DataInputStream(socket.getInputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Start thread for receiving messages
+        thread = new Thread(this);
+        thread.setDaemon(true);
+        thread.start();
+
+        // Set up the layout
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JLabel("Balaji Chat"), BorderLayout.NORTH);
+        panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        JPanel inputPanel = new JPanel(new FlowLayout());
+        inputPanel.add(textField);
+        inputPanel.add(btnSend);
+
+        panel.add(inputPanel, BorderLayout.SOUTH);
+        
+        add(panel);
+
+        // Handle window closing event
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                try {
+                    if (socket != null) socket.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                System.exit(0);
+            }
+        });
+
+        // Set frame properties
+        setSize(600, 400);
+        setTitle("Balaji Chatbox");
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        String msg = textField.getText();
+        textArea.append("Balaji: " + msg + "\n");
+        textField.setText("");
+
+        try {
+            dataOut.writeUTF(msg);
+            dataOut.flush();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        new Balaji();
+    }
+
+    public void run() {
+        while (true) {
+            try {
+                String msg = dataIn.readUTF();
+                textArea.append("Hemanth: " + msg + "\n");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
