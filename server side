@@ -4,18 +4,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-class Balaji extends JFrame implements Runnable, ActionListener {
+class Hemanth extends JFrame implements Runnable, ActionListener {
     JTextField textField;
     JTextArea textArea;
     JButton btnSend;
     Socket socket;
+    ServerSocket serverSocket;
     DataOutputStream dataOut;
     DataInputStream dataIn;
     Thread thread;
 
-    Balaji() {
+    Hemanth() {
         // Initialize components
         textField = new JTextField(40);
         textArea = new JTextArea(20, 50);
@@ -24,9 +26,10 @@ class Balaji extends JFrame implements Runnable, ActionListener {
 
         btnSend.addActionListener(this);
 
-        // Set up socket connection
+        // Set up server socket and connection
         try {
-            socket = new Socket("localhost", 12000);
+            serverSocket = new ServerSocket(12000);
+            socket = serverSocket.accept();
             dataOut = new DataOutputStream(socket.getOutputStream());
             dataIn = new DataInputStream(socket.getInputStream());
         } catch (Exception e) {
@@ -40,7 +43,7 @@ class Balaji extends JFrame implements Runnable, ActionListener {
 
         // Set up the layout
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel("Balaji Chat"), BorderLayout.NORTH);
+        panel.add(new JLabel("Hemanth Chat"), BorderLayout.NORTH);
         panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         JPanel inputPanel = new JPanel(new FlowLayout());
@@ -48,7 +51,7 @@ class Balaji extends JFrame implements Runnable, ActionListener {
         inputPanel.add(btnSend);
 
         panel.add(inputPanel, BorderLayout.SOUTH);
-        
+
         add(panel);
 
         // Handle window closing event
@@ -56,6 +59,7 @@ class Balaji extends JFrame implements Runnable, ActionListener {
             public void windowClosing(java.awt.event.WindowEvent e) {
                 try {
                     if (socket != null) socket.close();
+                    if (serverSocket != null) serverSocket.close();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -65,13 +69,13 @@ class Balaji extends JFrame implements Runnable, ActionListener {
 
         // Set frame properties
         setSize(600, 400);
-        setTitle("Balaji Chatbox");
+        setTitle("Hemanth Chatbox");
         setVisible(true);
     }
 
     public void actionPerformed(ActionEvent e) {
         String msg = textField.getText();
-        textArea.append("Balaji: " + msg + "\n");
+        textArea.append("Hemanth: " + msg + "\n");
         textField.setText("");
 
         try {
@@ -83,17 +87,18 @@ class Balaji extends JFrame implements Runnable, ActionListener {
     }
 
     public static void main(String[] args) {
-        new Balaji();
+        new Hemanth();
     }
 
     public void run() {
         while (true) {
             try {
                 String msg = dataIn.readUTF();
-                textArea.append("Hemanth: " + msg + "\n");
+                textArea.append("Balaji: " + msg + "\n");
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 }
+
